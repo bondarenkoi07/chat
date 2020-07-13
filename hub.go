@@ -2,21 +2,16 @@ package main
 
 import (
 	"./pkg"
-	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"html"
 	"log"
 	"net/http"
 )
 
 var clients = make(map[*websocket.Conn]bool) // connected clients
-var broadcast = make(chan message)           // broadcast channel
+var broadcast = make(chan pkg.Message)       // broadcast channel
 //var broadcast = make(chan pkg.ChangeData)
-type message struct {
-	addr string
-	text string
-}
+
 // Configure the upgrader
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  8192,
@@ -50,11 +45,11 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	data,err := dbconn.OnConnection()
 //	data,err := dbconn.OnJSONConnection()
 
-	fmt.Print("Connected!\n")
+	fmt.Print("Connected! \n")
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = ws.WriteMessage(websocket.TextMessage,[]byte(data))
+	err = ws.WriteJSON(data)
 	//err = ws.WriteMessage(websocket.TextMessage,data)
 	if err != nil {
 		log.Fatal(err)
@@ -79,9 +74,9 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 		// Send the newly received message to the broadcast channel
-		ToChan :=message{
-			addr:ws.RemoteAddr().String(),
-			text: string(msg),
+		ToChan :=pkg.Message{
+			Addr: ws.RemoteAddr().String(),
+			Text: string(msg),
 		}
 
 		broadcast <-ToChan
@@ -93,31 +88,10 @@ func handleMessages() {
 		// Grab the next message from the broadcast channel
 		msg := <-broadcast
 		// Send it out to every client that is currently connected
+		output:= make(map[int]interface{})
+		output[0] = msg
 		for client := range clients {
-			err := client.WriteMessage(websocket.TextMessage, []byte("<p>"+
-				html.EscapeString(msg.addr)+
-				": "+
-				html.EscapeString(msg.text)+"</p>"))
-			if err != nil {
-				log.Printf("error: %v", err)
-				client.Close()
-				delete(clients, client)
-			}
-		}
-	}
-}
-
-func handleJSONMessages() {
-	for {
-		// Grab the next message from the broadcast channel
-		msg := <-broadcast
-		str,err :=json.Marshal(msg)
-		if err != nil {
-			log.Printf("error: %v", err)
-		}
-		// Send it out to every client that is currently connected
-		for client := range clients {
-			err := client.WriteMessage(websocket.TextMessage, str)
+			err := client.WriteJSON( output)
 			if err != nil {
 				log.Printf("error: %v", err)
 				client.Close()

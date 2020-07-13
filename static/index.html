@@ -19,7 +19,11 @@
         console.log('Connected')
     };
     ws.onmessage = function (e) {
-        output.innerHTML += "<p>"+ e.data+"</p>" ;
+
+        let arr = JSON.parse(e.data)
+        for(let i = 0; typeof arr[i]!==undefined; i++){
+            output.innerHTML += "<p>"+ arr[i]["addr"]+":"+arr[i]["text"]+"</p>" ;
+        }
     };
     ws.onclose = function () {
         console.log('Disconnected')
