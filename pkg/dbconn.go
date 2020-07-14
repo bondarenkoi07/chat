@@ -10,13 +10,13 @@ import (
 
 type DB struct {
 	pool *pgxpool.Pool
-	ctx context.Context
+	ctx  context.Context
 }
-type ChangeData struct{
-	id int16
-	mode string
-	x int
-	y int
+type ChangeData struct {
+	id    int16
+	mode  string
+	x     int
+	y     int
 	model string
 }
 
@@ -26,26 +26,27 @@ type Message struct {
 	id   int    `json:"id"`
 }
 
-func (dbp *DB) NewDB() error{
-	(*dbp).ctx =context.Background()
-	dsn:="postgres://landscape:Ee010800@localhost:5432/landscape"
+func (dbp *DB) NewDB() error {
+	(*dbp).ctx = context.Background()
+	dsn := "postgres://landscape:Ee010800@localhost:5432/landscape"
 	var err error
-	(*dbp).pool, err = pgxpool.Connect((*dbp).ctx,dsn)
-	if err!=nil {
+	(*dbp).pool, err = pgxpool.Connect((*dbp).ctx, dsn)
+	if err != nil {
 		return err
 	}
 
 	return nil
 }
-func (dbp *DB) OnRead(msg string,addr net.Addr) error{
-	conn,err := (*dbp).pool.Acquire((*dbp).ctx)
+func (dbp *DB) OnRead(msg string, addr net.Addr) error {
+	SQLStatement := "insert into msg(addr,msg) values ($1,$2)"
+	conn, err := (*dbp).pool.Acquire((*dbp).ctx)
 	defer conn.Release()
 	tx, err := conn.Begin(dbp.ctx)
 	if err != nil {
 
 		return err
 	}
-	_, err =tx.Exec((*dbp).ctx, "insert into msg(addr,msg) values ($1,$2)",addr.String(),msg)
+	_, err = tx.Exec((*dbp).ctx, SQLStatement, addr.String(), msg)
 	if err != nil {
 		defer tx.Rollback((*dbp).ctx)
 		return err
@@ -57,34 +58,34 @@ func (dbp *DB) OnRead(msg string,addr net.Addr) error{
 	return nil
 }
 
-func (dbp *DB) OnConnection() (interface{},error) {
-	conn,err := (*dbp).pool.Acquire((*dbp).ctx)
+func (dbp *DB) OnConnection() (interface{}, error) {
+	SQLStatement := "select * from msg"
+	conn, err := (*dbp).pool.Acquire((*dbp).ctx)
 	defer conn.Release()
 	if err != nil {
 
-		return []byte(""),err
+		return []byte(""), err
 	}
 	tx, err := conn.Begin((*dbp).ctx)
 	if err != nil {
 
-		return []byte(""),err
+		return []byte(""), err
 	}
-	rows, err :=tx.Query((*dbp).ctx, "select * from msg")
-	var  arr Message
-	output:= make(map[int]interface{})
+	rows, err := tx.Query((*dbp).ctx, SQLStatement)
+	var arr Message
+	output := make(map[int]interface{})
 	var i = 0
 	for rows.Next() {
-		err = rows.Scan(&arr.Text,&arr.Addr,&arr.id)
+		err = rows.Scan(&arr.Text, &arr.Addr, &arr.id)
 		if err != nil {
-			return []byte(""),err
+			return []byte(""), err
 		}
-		output[i]=arr
+		output[i] = arr
 		i++
 	}
 	err = tx.Commit((*dbp).ctx)
 	if err != nil {
-		return []byte(""),err
+		return []byte(""), err
 	}
-	return output,nil
+	return output, nil
 }
-

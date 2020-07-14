@@ -24,7 +24,7 @@ func main() {
 	// Create a simple file server
 	fs := http.FileServer(http.Dir("static"))
 	err := dbconn.NewDB()
-	if err!=nil{
+	if err != nil {
 		fmt.Print(err)
 	}
 	http.Handle("/", fs)
@@ -38,12 +38,12 @@ func main() {
 
 func handleConnections(w http.ResponseWriter, r *http.Request) {
 	// Upgrade initial GET request to a websocket
-	ws, err := upgrader.Upgrade(w, r,nil)
+	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	data,err := dbconn.OnConnection()
-//	data,err := dbconn.OnJSONConnection()
+	data, err := dbconn.OnConnection()
+	//	data,err := dbconn.OnJSONConnection()
 
 	fmt.Print("Connected! \n")
 	if err != nil {
@@ -60,26 +60,26 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 	clients[ws] = true
 
 	for {
-		var msg []byte
+		var msg = make(map[string]string)
 		// Read in a new message as JSON and map it to a Message object
-		_,msg,err := ws.ReadMessage()
+		err := ws.ReadJSON(&msg)
 		if err != nil {
 			log.Printf("error: %v", err)
 			delete(clients, ws)
 			break
 		}
 
-		err = dbconn.OnRead(string(msg),ws.RemoteAddr())
+		err = dbconn.OnRead(msg["text"], ws.RemoteAddr())
 		if err != nil {
 			log.Fatal(err)
 		}
 		// Send the newly received message to the broadcast channel
-		ToChan :=pkg.Message{
+		ToChan := pkg.Message{
 			Addr: ws.RemoteAddr().String(),
-			Text: string(msg),
+			Text: msg["text"],
 		}
 
-		broadcast <-ToChan
+		broadcast <- ToChan
 	}
 }
 
@@ -88,10 +88,10 @@ func handleMessages() {
 		// Grab the next message from the broadcast channel
 		msg := <-broadcast
 		// Send it out to every client that is currently connected
-		output:= make(map[int]interface{})
+		output := make(map[int]interface{})
 		output[0] = msg
 		for client := range clients {
-			err := client.WriteJSON( output)
+			err := client.WriteJSON(output)
 			if err != nil {
 				log.Printf("error: %v", err)
 				client.Close()
