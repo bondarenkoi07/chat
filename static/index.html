@@ -22,6 +22,7 @@
     ws.onmessage = function (e) {
 
         let arr = JSON.parse(e.data)
+        arr.sort();
         for(let i = 0; typeof arr[i]!==undefined; i++){
             output.innerHTML += "<p>"+ arr[i]["addr"]+":"+arr[i]["text"]+"</p>" ;
         }

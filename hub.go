@@ -43,14 +43,12 @@ func handleConnections(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	data, err := dbconn.OnConnection()
-	//	data,err := dbconn.OnJSONConnection()
 
 	fmt.Print("Connected! \n")
 	if err != nil {
 		log.Fatal(err)
 	}
 	err = ws.WriteJSON(data)
-	//err = ws.WriteMessage(websocket.TextMessage,data)
 	if err != nil {
 		log.Fatal(err)
 	}

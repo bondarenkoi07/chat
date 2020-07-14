@@ -23,7 +23,7 @@ type ChangeData struct {
 type Message struct {
 	Addr string `json:"addr"`
 	Text string `json:"text"`
-	id   int    `json:"id"`
+	Id   int    `json:"id"`
 }
 
 func (dbp *DB) NewDB() error {
@@ -76,7 +76,7 @@ func (dbp *DB) OnConnection() (interface{}, error) {
 	output := make(map[int]interface{})
 	var i = 0
 	for rows.Next() {
-		err = rows.Scan(&arr.Text, &arr.Addr, &arr.id)
+		err = rows.Scan(&arr.Text, &arr.Addr, &arr.Id)
 		if err != nil {
 			return []byte(""), err
 		}
