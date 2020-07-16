@@ -4,6 +4,7 @@ import (
 	_ "github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgxpool"
 	"golang.org/x/net/context"
+	"html"
 	"net"
 	_ "os"
 )
@@ -80,6 +81,7 @@ func (dbp *DB) OnConnection() (interface{}, error) {
 		if err != nil {
 			return []byte(""), err
 		}
+		arr.Text = html.EscapeString(arr.Text)
 		output[i] = arr
 		i++
 	}

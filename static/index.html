@@ -8,10 +8,9 @@
 </head>
 
 <body>
-<p id="output"></p>
+<div id="output"></div>
 <label for="input"></label><input id="input" type="text" />
 <button onclick="send()">Send</button>
-<div id="output"></div>
 <script>
 
   let input = document.getElementById("input");
@@ -33,7 +32,7 @@
     console.log('Disconnected')
   }
   function send() {
-    var arr = new Map()
+    let arr = new Map()
     arr['text'] = input.value
     ws.send(JSON.stringify(arr));
     input.value = "";
