@@ -59,7 +59,7 @@ func (dbp *DB) OnRead(msg string, addr net.Addr) error {
 }
 
 func (dbp *DB) OnConnection() (interface{}, error) {
-	SQLStatement := "select * from msg"
+	SQLStatement := "select * from msg order by id"
 	conn, err := (*dbp).pool.Acquire((*dbp).ctx)
 	defer conn.Release()
 	if err != nil {

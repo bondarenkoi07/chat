@@ -7,12 +7,12 @@ ws.onmessage = function (e) {
         y = data[i]['y'];
         modelName = data[i]['model'];
 
-        if (mode == 'up')
+        if (mode === 'up')
             doTerrainUp(x, y);
-        else if (mode == 'down')
+        else if (mode === 'down')
             doTerrainDown(x, y);
         else{
-            if (modelName!='none'){
+            if (modelName!=='none'){
                 objectData[y][x]=modelName;
                 fillModelControl(x,y);
             }

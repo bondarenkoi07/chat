@@ -1,9 +1,10 @@
+
 <!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <title>WebSocket</title>
+  <meta charset="utf-8">
+  <title>WebSocket</title>
 </head>
 
 <body>
@@ -12,30 +13,31 @@
 <button onclick="send()">Send</button>
 <div id="output"></div>
 <script>
-    let input = document.getElementById("input");
-    let output = document.getElementById("output");
-    ws = new WebSocket('ws://localhost:8000/ws');
-    ws.onopen = function() {
-        ws.
-        console.log('Connected')
-    };
-    ws.onmessage = function (e) {
 
-        let arr = JSON.parse(e.data)
-        arr.sort();
-        for(let i = 0; typeof arr[i]!==undefined; i++){
-            output.innerHTML += "<p>"+ arr[i]["addr"]+":"+arr[i]["text"]+"</p>" ;
-        }
-    };
-    ws.onclose = function () {
-        console.log('Disconnected')
+  let input = document.getElementById("input");
+  let output = document.getElementById("output");
+  ws = new WebSocket('ws://localhost:8000/ws');
+
+  ws.onopen = function() {
+    ws.
+    console.log('Connected')
+  };
+  ws.onmessage = function (e) {
+
+    let arr = JSON.parse(e.data)
+    for(let i in arr){
+      output.innerHTML += "<p>"+ arr[i]["addr"]+":"+arr[i]["text"]+"</p>" ;
     }
-    function send() {
-        var arr = new Map()
-        arr['text'] = input.value
-        ws.send(JSON.stringify(arr));
-        input.value = "";
-    }
+  };
+  ws.onclose = function () {
+    console.log('Disconnected')
+  }
+  function send() {
+    var arr = new Map()
+    arr['text'] = input.value
+    ws.send(JSON.stringify(arr));
+    input.value = "";
+  }
 </script>
 </body>
 
